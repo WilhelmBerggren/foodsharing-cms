@@ -61,7 +61,77 @@ All via environment variables (see `.env.example`):
 - `DATA_DIR`, `UPLOADS_DIR` — override storage locations (e.g. point at a
   backed-up volume like `/var/lib/foodsharing-cms`).
 
-## Deploy on the VPS
+## Deploy with Co-op Cloud (abra)
+
+This repo doubles as a Co-op Cloud **recipe** (it contains `compose.yml`,
+`abra.sh`, `.env.sample`). The CMS runs as its own app and **Traefik** routes
+`https://<karrot-domain>/fss-cms/*` to it — same origin as Karrot, so no changes
+to the Karrot recipe (or its nginx) are needed.
+
+### 1. Publish the image
+
+Swarm can't build images, so the recipe references a published image. Pushing a
+tag runs `.github/workflows/publish.yml`, which builds and pushes to
+`ghcr.io/wilhelmberggren/foodsharing-cms`:
+
+```bash
+git tag v1.0.0 && git push origin v1.0.0
+```
+
+Make the GHCR package **public** (repo → Packages → Package settings) so the
+Swarm nodes can pull it without credentials. To build manually instead:
+
+```bash
+docker build -t ghcr.io/wilhelmberggren/foodsharing-cms:1.0.0 .
+docker push ghcr.io/wilhelmberggren/foodsharing-cms:1.0.0
+```
+
+The tag in `compose.yml` (`image:`) must match what you pushed.
+
+### 2. Create and configure the app
+
+```bash
+# Make abra aware of the recipe (clone this repo into the recipes dir):
+git clone https://github.com/WilhelmBerggren/foodsharing-cms \
+  ~/.abra/recipes/foodsharing-cms
+
+# Create the app on your server
+abra app new foodsharing-cms --server <your-server>
+
+# Edit DOMAIN to match your Karrot domain (e.g. foodsharing.se)
+abra app config <app-name>
+```
+
+### 3. Set the editor password (secret)
+
+The editor password is the `cms_token` secret. Choose your own:
+
+```bash
+abra app secret insert <app-name> cms_token v1 "your-chosen-password"
+```
+
+(or `abra app secret generate <app-name> cms_token v1` for a random one — note
+it down, it's the login for `/#/fss-admin`).
+
+### 4. Deploy
+
+```bash
+abra app deploy <app-name>
+```
+
+On first deploy the data volume is empty, so the container seeds the initial
+page content automatically (`SEED_ON_EMPTY=true`). Visit
+`https://<karrot-domain>/fss-cms/api/health` to confirm it's up, then edit
+content at `https://<karrot-domain>/#/fss-admin`.
+
+> Why no Karrot/nginx change? Traefik already fronts every Co-op Cloud app. The
+> CMS router uses `Host(<domain>) && PathPrefix(/fss-cms)` with a higher
+> priority than Karrot's host-only router, and a `stripprefix` middleware
+> removes `/fss-cms` before forwarding. If you ever *did* want Karrot's nginx to
+> proxy instead, both stacks would need to share a Docker network — the Traefik
+> route avoids that entirely.
+
+## Deploy on a plain VPS (systemd)
 
 The cleanest setup proxies the CMS under the **same domain** as Karrot, so the
 plugin talks to `/fss-cms/...` with no CORS.

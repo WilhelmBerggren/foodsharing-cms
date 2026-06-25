@@ -3,16 +3,24 @@ import { serveStatic } from "@hono/node-server/serve-static";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { bearerAuth } from "hono/bearer-auth";
-import { promises as fs } from "node:fs";
+import { promises as fs, readFileSync } from "node:fs";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
 import { pageSchema } from "./schema.js";
 import { getPage, listPages, savePage, UPLOADS_DIR } from "./store.js";
 
 const PORT = Number(process.env.PORT ?? 8787);
-const TOKEN = process.env.CMS_TOKEN;
+// The editor password may be provided directly (CMS_TOKEN) or via a file
+// (CMS_TOKEN_FILE) — the latter for Docker / Co-op Cloud secrets mounted at
+// /run/secrets/...
+let TOKEN = process.env.CMS_TOKEN;
+if (!TOKEN && process.env.CMS_TOKEN_FILE) {
+  TOKEN = readFileSync(process.env.CMS_TOKEN_FILE, "utf8").trim();
+}
 if (!TOKEN) {
-  console.error("Refusing to start: set CMS_TOKEN (the editor password).");
+  console.error(
+    "Refusing to start: set CMS_TOKEN or CMS_TOKEN_FILE (the editor password).",
+  );
   process.exit(1);
 }
 

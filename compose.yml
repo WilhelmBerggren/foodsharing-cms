@@ -1,0 +1,55 @@
+version: "3.8"
+
+services:
+  app:
+    image: ghcr.io/wilhelmberggren/foodsharing-cms:1.0.0
+    environment:
+      - PORT=8787
+      - DATA_DIR=/data/content
+      - UPLOADS_DIR=/data/uploads
+      - CMS_TOKEN_FILE=/run/secrets/cms_token
+      - CORS_ORIGINS=${CORS_ORIGINS:-*}
+      - SEED_ON_EMPTY=${SEED_ON_EMPTY:-true}
+    secrets:
+      - cms_token
+    volumes:
+      - cms_data:/data
+    networks:
+      - proxy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8787/api/health"]
+      interval: 15s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    deploy:
+      update_config:
+        failure_action: rollback
+        order: start-first
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.services.${STACK_NAME}.loadbalancer.server.port=8787"
+        # Same origin as Karrot: route /fss-cms/* on the Karrot domain here.
+        - "traefik.http.routers.${STACK_NAME}.rule=Host(`${DOMAIN}`) && PathPrefix(`/fss-cms`)"
+        # Higher than Karrot's host-only router so /fss-cms is intercepted first.
+        - "traefik.http.routers.${STACK_NAME}.priority=100"
+        - "traefik.http.routers.${STACK_NAME}.entrypoints=web-secure"
+        - "traefik.http.routers.${STACK_NAME}.tls.certresolver=${LETS_ENCRYPT_ENV}"
+        # Strip /fss-cms so the app sees /api/... and /uploads/...
+        - "traefik.http.middlewares.${STACK_NAME}-sp.stripprefix.prefixes=/fss-cms"
+        - "traefik.http.routers.${STACK_NAME}.middlewares=${STACK_NAME}-sp"
+        - "coop-cloud.${STACK_NAME}.version=1.0.0+1.0.0"
+        - "backupbot.backup=true"
+        - "backupbot.backup.path=/data"
+
+networks:
+  proxy:
+    external: true
+
+volumes:
+  cms_data:
+
+secrets:
+  cms_token:
+    external: true
+    name: ${STACK_NAME}_cms_token_${SECRET_CMS_TOKEN_VERSION}
