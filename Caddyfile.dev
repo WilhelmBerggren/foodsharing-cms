@@ -1,0 +1,27 @@
+# Local smoke-test proxy for the foodsharing CMS + Karrot dev server.
+#
+# Puts the CMS and the Quasar/Vite dev server on ONE origin so the plugin's
+# /fss-cms requests are same-origin (no CORS) — exactly like production.
+#
+# Run order (three terminals):
+#   1) cd foodsharing-cms     && CMS_TOKEN=dev PORT=8787 npm run dev
+#   2) cd karrot-frontend     && NO_OPEN_BROWSER=1 npm run dev:backend:dev   # -> :8080
+#   3) cd foodsharing-cms     && caddy run --config Caddyfile.dev            # -> :9000
+#
+# Then open  http://localhost:9000  (NOT :8080).
+#   pages : http://localhost:9000/#/om-oss
+#   editor: http://localhost:9000/#/fss-admin   (password = CMS_TOKEN, i.e. "dev")
+
+:9000 {
+	# CMS API + uploaded images. handle_path strips the /fss-cms prefix, so the
+	# CMS sees /api/... and /uploads/... just like in production.
+	handle_path /fss-cms/* {
+		reverse_proxy localhost:8787
+	}
+
+	# Everything else -> Quasar/Vite dev server. reverse_proxy upgrades the
+	# HMR websocket automatically, so hot reload keeps working.
+	handle {
+		reverse_proxy localhost:8080
+	}
+}

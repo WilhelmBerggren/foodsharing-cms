@@ -1,0 +1,6 @@
+node_modules/
+.env
+# Content + uploads are data, not code. Back them up separately (see README).
+# Comment these out if you prefer to version content in git instead.
+data/
+uploads/
