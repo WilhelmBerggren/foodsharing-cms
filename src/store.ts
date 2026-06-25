@@ -1,7 +1,7 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { pageSchema, type Page } from "./schema.js";
+import { pageSchema, type Page, type PageInput } from "./schema.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -48,7 +48,7 @@ export async function getPage(slug: string): Promise<Page | null> {
   }
 }
 
-export async function savePage(page: Page): Promise<Page> {
+export async function savePage(page: PageInput): Promise<Page> {
   await ensureDirs();
   const validated = pageSchema.parse(page);
   await fs.writeFile(

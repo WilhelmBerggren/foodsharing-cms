@@ -72,10 +72,13 @@ to the Karrot recipe (or its nginx) are needed.
 
 Swarm can't build images, so the recipe references a published image. Pushing a
 tag runs `.github/workflows/publish.yml`, which builds and pushes to
-`ghcr.io/wilhelmberggren/foodsharing-cms`:
+`ghcr.io/wilhelmberggren/foodsharing-cms`.
+
+Use an **annotated** tag (`-a`) — abra requires recipe version tags to be
+annotated (lint rule R014), and this repo is also the recipe:
 
 ```bash
-git tag v1.0.0 && git push origin v1.0.0
+git tag -a v1.0.0 -m "v1.0.0" && git push origin v1.0.0
 ```
 
 Make the GHCR package **public** (repo → Packages → Package settings) so the
@@ -123,6 +126,18 @@ On first deploy the data volume is empty, so the container seeds the initial
 page content automatically (`SEED_ON_EMPTY=true`). Visit
 `https://<karrot-domain>/fss-cms/api/health` to confirm it's up, then edit
 content at `https://<karrot-domain>/#/fss-admin`.
+
+**Troubleshooting `R014: only annotated tags used for recipe version`** — a
+lightweight git tag exists on the recipe. Recreate it annotated, or deploy the
+current checkout directly:
+
+```bash
+cd ~/.abra/recipes/foodsharing-cms
+git tag -d v1.0.0 && git tag -a v1.0.0 -m "v1.0.0"   # make it annotated
+abra app deploy <app-name>
+# ...or skip recipe versioning entirely while iterating:
+abra app deploy <app-name> --chaos
+```
 
 > Why no Karrot/nginx change? Traefik already fronts every Co-op Cloud app. The
 > CMS router uses `Host(<domain>) && PathPrefix(/fss-cms)` with a higher

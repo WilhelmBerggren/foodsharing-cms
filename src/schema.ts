@@ -40,6 +40,32 @@ export const sectionSchema = z.object({
   bannerImg: z.string().optional(),
   hasButton: z.boolean().default(false),
   buttonText: z.string().optional(),
+  buttonHref: z.string().optional(), // if set, the button is a link
+});
+
+// A "Läs mer"-style group of link cards pointing at other pages.
+export const linkItemSchema = z.object({
+  label: z.string().default(""),
+  href: z.string().default(""),
+});
+
+export const linkSectionSchema = z.object({
+  title: z.string().default(""),
+  items: z.array(linkItemSchema).default([]),
+});
+
+// A logo/partner ("Drivs av" / "Sammarbetar med") group.
+export const partnerItemSchema = z.object({
+  logo: z.string().default(""), // image path or absolute URL
+  name: z.string().default(""),
+  linkLabel: z.string().default(""), // visible link text, e.g. "solikyl.se"
+  url: z.string().default(""), // href
+});
+
+export const partnerSectionSchema = z.object({
+  title: z.string().default(""),
+  variant: z.enum(["even", "odd"]).default("even"),
+  items: z.array(partnerItemSchema).default([]),
 });
 
 export const genericPageSchema = z.object({
@@ -48,7 +74,34 @@ export const genericPageSchema = z.object({
   title: z.string().default(""),
   hero: heroSchema.optional(),
   sections: z.array(sectionSchema).default([]),
+  partnerSections: z.array(partnerSectionSchema).default([]),
+  linkSections: z.array(linkSectionSchema).default([]),
   showGroups: z.boolean().default(false),
+});
+
+// ---- Guide (article-style) page -------------------------------------------
+// A simple page with a "Tillbaka" bar, a banner image, a title and body text.
+export const guidePageSchema = z.object({
+  kind: z.literal("guide"),
+  slug: slugField,
+  title: z.string().default(""),
+  banner: z.string().default(""),
+  body: z.array(z.string()).default([]),
+});
+
+// ---- Contact page ---------------------------------------------------------
+export const contactPageSchema = z.object({
+  kind: z.literal("contact"),
+  slug: slugField,
+  title: z.string().default("Kontakta oss"),
+  heading: z.string().default(""),
+  subtitle: z.string().default(""),
+  emailCard: z.object({
+    heading: z.string().default(""),
+    email: z.string().default(""),
+    note: z.string().default(""),
+  }),
+  socialHeading: z.string().default(""),
 });
 
 // ---- Donera (rich, fixed-structure) page ----------------------------------
@@ -103,12 +156,31 @@ export const pageSchema = z.preprocess(
     val && typeof val === "object" && !("kind" in val)
       ? { ...val, kind: "generic" }
       : val,
-  z.discriminatedUnion("kind", [genericPageSchema, doneraPageSchema]),
+  z.discriminatedUnion("kind", [
+    genericPageSchema,
+    doneraPageSchema,
+    guidePageSchema,
+    contactPageSchema,
+  ]),
 );
 
 export type HeroButton = z.infer<typeof heroButtonSchema>;
 export type Hero = z.infer<typeof heroSchema>;
 export type Section = z.infer<typeof sectionSchema>;
+export type PartnerItem = z.infer<typeof partnerItemSchema>;
+export type PartnerSection = z.infer<typeof partnerSectionSchema>;
+export type LinkItem = z.infer<typeof linkItemSchema>;
+export type LinkSection = z.infer<typeof linkSectionSchema>;
+export type GuidePage = z.infer<typeof guidePageSchema>;
+export type ContactPage = z.infer<typeof contactPageSchema>;
 export type GenericPage = z.infer<typeof genericPageSchema>;
 export type DoneraPage = z.infer<typeof doneraPageSchema>;
 export type Page = z.infer<typeof pageSchema>;
+
+// Input/authoring shape: defaulted fields are optional. Used by the seed and
+// savePage so callers don't have to spell out every defaulted array/flag.
+export type PageInput =
+  | z.input<typeof genericPageSchema>
+  | z.input<typeof doneraPageSchema>
+  | z.input<typeof guidePageSchema>
+  | z.input<typeof contactPageSchema>;
