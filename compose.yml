@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   app:
-    image: ghcr.io/wilhelmberggren/foodsharing-cms:1.0.1
+    image: ghcr.io/wilhelmberggren/foodsharing-cms:1.0.2
     environment:
       - PORT=8787
       - DATA_DIR=/data/content
@@ -38,7 +38,7 @@ services:
         # Strip /fss-cms so the app sees /api/... and /uploads/...
         - "traefik.http.middlewares.${STACK_NAME}-sp.stripprefix.prefixes=/fss-cms"
         - "traefik.http.routers.${STACK_NAME}.middlewares=${STACK_NAME}-sp"
-        - "coop-cloud.${STACK_NAME}.version=1.0.1+1.0.1"
+        - "coop-cloud.${STACK_NAME}.version=1.0.2+1.0.2"
         - "backupbot.backup=true"
         - "backupbot.backup.path=/data"
 
