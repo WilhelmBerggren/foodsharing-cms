@@ -1,11 +1,7 @@
 /**
- * One-off seed: writes the current hardcoded page content into data/*.json.
+ * One-off seed: writes the current page content into data/*.json.
  * Run once with `npm run seed`. Existing files are overwritten, so don't
  * re-run after editors have made changes.
- *
- * Image values are the existing GitHub-raw URLs so nothing breaks before you
- * upload images through the editor. The plugin passes absolute URLs through
- * unchanged; only "/uploads/..." paths get prefixed with the CMS base URL.
  */
 import { savePage } from "./store.js";
 import type { Page } from "./schema.js";
@@ -18,11 +14,12 @@ const bg = gh("foodsharing_bg.png");
 
 const pages: Page[] = [
   {
+    kind: "generic",
     slug: "landing2",
     title: "Foodsharing Sweden",
     hero: {
       banner,
-      headingLines: ["Mindre matsvinn,", "Mer gemenskap"],
+      headingLines: ["Mindre matsvinn,", "Mer *gemenskap*"],
       subtitle: "Tillsammans räddar vi mat och bygger en hållbar framtid",
       buttons: [
         { label: "Bli Voluntär", style: "primary" },
@@ -64,6 +61,7 @@ const pages: Page[] = [
     ],
   },
   {
+    kind: "generic",
     slug: "om-oss",
     title: "Om oss",
     hero: { banner, headingLines: ["Om oss"], buttons: [] },
@@ -89,6 +87,7 @@ const pages: Page[] = [
     ],
   },
   {
+    kind: "generic",
     slug: "starta-en-grupp",
     title: "Starta en grupp",
     hero: { banner, headingLines: ["Starta en grupp"], buttons: [] },
@@ -116,10 +115,81 @@ const pages: Page[] = [
       },
     ],
   },
-  // Stub pages — currently just toolbar + footer. Add hero/sections via the editor.
-  { slug: "donera-mat", title: "Donera mat", sections: [], showGroups: false },
-  { slug: "ta-emot-mat", title: "Ta emot mat", sections: [], showGroups: false },
-  { slug: "kontakta-oss", title: "Kontakta oss", sections: [], showGroups: false },
+  {
+    kind: "donera",
+    slug: "donera-mat",
+    title: "Donera mat",
+    hero: {
+      title: "Donera mat",
+      subtitle: "Nu kan ni donera, istället för att slänga! :)",
+    },
+    intro: {
+      title: "För regelbundna donationer",
+      paragraphs: [
+        "Vi samarbetar främst med mataffärer, bagerier och andra livsmedelsverksamhet där svinnet förekommer varje dag. Vi arbetar ideellt och förväntar oss bara att ni sätter in rutiner för att donera matöverskottet istället för att slänga.",
+      ],
+      lead: "Så fungerar det i praktiken:",
+    },
+    steps: [
+      {
+        icon: "calendar",
+        text: "Ni bestämmer vilka dagar och tidpunkter som passar bäst för regelbundna upphämtningar - minst en gång i veckan, helst flera gänger!",
+      },
+      {
+        icon: "apple-pail",
+        text: "Vi har koll på matsäkerheten – vi sorterar och kontrollerar innan utdelning",
+      },
+      {
+        icon: "delivery-box",
+        text: "Vi levererar varoma till närmaste utdelningsställe, där volontärer håller i en utdelning och får ta del av maten tillsammans med andra",
+      },
+    ],
+    benefitsTitle: "Några fördelar",
+    benefits: [
+      {
+        icon: "handshake",
+        text: "Kontinuitet och pålitlighet: vi dyker alltid upp på bestämda dagar och tider för hämtningar!",
+      },
+      {
+        icon: "trash",
+        text: "Minskade kostnader för avfallshantering på längden",
+      },
+      {
+        icon: "tree",
+        text: "Minskad miljöpåverkan då ert svinn får en andra chans att konsumeras",
+      },
+      {
+        icon: "thumbs-up",
+        text: "Bra rykte i det lokala samhället för ert ansvarstagande",
+      },
+    ],
+    temporary: {
+      title: "För tillfälliga donationer",
+      text: "Kontakta oss eller hitta din lokala grupp för donation.",
+      buttonLabel: "Till Grupper",
+      buttonHref: "#/groupPreview",
+    },
+    contact: {
+      title: "Hör av dig!",
+      text: "Vi bokar gärna ett möte eller har ett telefonsamtal för att gå genom funderingar eller praktisk uppstart av samarbete.",
+      buttonLabel: "Kontakta Oss",
+      buttonHref: "#/kontakta-oss",
+    },
+  },
+  {
+    kind: "generic",
+    slug: "ta-emot-mat",
+    title: "Ta emot mat",
+    sections: [],
+    showGroups: false,
+  },
+  {
+    kind: "generic",
+    slug: "kontakta-oss",
+    title: "Kontakta oss",
+    sections: [],
+    showGroups: false,
+  },
 ];
 
 for (const page of pages) {
