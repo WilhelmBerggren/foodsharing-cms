@@ -9,7 +9,7 @@ import type { PageInput } from "./schema.js";
 const gh = (file: string) =>
   `https://github.com/WilhelmBerggren/foodsharing-plugin/blob/main/src/assets/banner/${file}?raw=true`;
 
-const banner = gh("plastic_bag_with_food.png");
+const banner = gh("plastic_bag_with_food.jpg");
 const bg = gh("foodsharing_bg.png");
 
 const logo = (file: string) =>
@@ -58,7 +58,7 @@ const pages: PageInput[] = [
         ],
         variant: "even",
         bgImage: bg,
-        bannerImg: gh("ta_emot_mat.png"),
+        bannerImg: gh("ta_emot_mat_section.jpg"),
         hasButton: true,
       },
     ],
@@ -67,7 +67,7 @@ const pages: PageInput[] = [
     kind: "generic",
     slug: "om-oss",
     title: "Om oss",
-    hero: { banner: gh("om_oss.png"), headingLines: ["Om oss"], buttons: [] },
+    hero: { banner: gh("om_oss.jpg"), headingLines: ["Om oss"], buttons: [] },
     showGroups: false,
     sections: [
       {
@@ -86,7 +86,7 @@ const pages: PageInput[] = [
           "Att dela utan motprestation är ett självklart sätt att skapa gemenskap! Hjälp oss att rädda maten, tillsammans!",
         ],
         variant: "odd",
-        bannerImg: gh("ta_emot_mat.png"),
+        bannerImg: gh("ta_emot_mat_section.jpg"),
       },
     ],
     partnerSections: [
